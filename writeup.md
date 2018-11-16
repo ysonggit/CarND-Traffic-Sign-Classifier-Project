@@ -63,54 +63,59 @@ Recall in the LeNet Lab, the LeNet classifier takes grayscale MNIST data, which 
 When converting the image, I referred to the codes of Jeremy Shannon [1] because I got the runtime exceptions while invoking the openCV `cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)` functions. It turns out Jeremy's method is more straightforward and efficient using numpy's vector operation against the image array.
 
 Here is an example of a traffic sign image before and after grayscaling.
+
 ![rgb image][image5] ![grayscale image][image6]
 
 Because the image data should be normalized so that the data has mean zero and equal variance. I follow the suggested way, namely, `(pixel - 128)/ 128`, to approximately normalize the data and can be used in this project.
 
-The codes are in the 8th code block of the notebook. One pictures below show the grayscale image on the left and normalized grayscale image on the right.
+The codes are in the 8th code block of the notebook. The pictures below show the grayscale image on the left and normalized grayscale image on the right.
 
 ![grayscale image][image7] ![normalized grayscale image][image8]
 
 #### 2. Final model architecture
 
-In Jeremy Shannon's work [1], I see he got impressive results with a quite high accuracy on the train and test datasets. However, he used a modified CNN architecture (shown below) by splitting the results of the 1st convolution layer into two parts, then apply a convolution layer to just one set and join with the other set with the results together.
+Jeremy Shannon obtained impressive results with a quite high accuracy on the train and test datasets in his work [1]. However, he used a modified CNN architecture (shown below) by splitting the results of the 1st convolution layer into two parts, then apply a convolution layer to just one set and join with the other set with the results together.
 
 ![Modified LeNet Architecture][image9]
 
 (The above architecture figure is from the [IJCNN paper](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf) of Pierre Sermanet and Yann LeCun.)
 
-My idea of solving this project is simpler: just re-use the LeNet architecture in the Lab solution as much as possible. First because I believe that the architecture introduece by Yann LeCun ([LeNet paper](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf)) should work well with the traffic sign image datasets. Secondly, I am curious to know how would the original LeNet architecture perform with the traffic sign dataset.
+My idea of solving this project is simpler: just re-use the LeNet architecture in the Lab solution as much as possible. First because I believe that the architecture introduced by Yann LeCun ([LeNet paper](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf)) should work well with the traffic sign image datasets. Secondly, I am curious to know how would the original LeNet architecture perform with the traffic sign dataset.
 
-In my work, I keep the most of the codes in the LeNet Lab. The only change I made is to change the dimension of the output layer from 10 to 43, which is the actual number of classes of signs, as the figure shows below:
+In my 12th code block of the notebook, I keep the most of the codes in the LeNet Lab. The only change I made is to change the dimension of the output layer from 10 to 43, which is the actual number of classes of signs, as the figure shows below:
 
 ![LeNet Architecture][image2]
 
 My final model consisted of the following layers:
 
-| Layer         		|     Description	        					|
-|:---------------------:|:---------------------------------------------:|
-| Input         		| 32x32x3 RGB image   							|
-| Convolution 3x3     	| 1x1 stride, same padding, outputs 32x32x64 	|
-| RELU					|												|
-| Max pooling	      	| 2x2 stride,  outputs 16x16x64 				|
-| Convolution 3x3	    | etc.      									|
-| Fully connected		| etc.        									|
-| Softmax				| etc.        									|
-|						|												|
-|						|												|
+| Layer         		|     Description	                   					|
+|:-----------------:|:-------------------------------------------:|
+| Input         		| 32x32x1 Gray image   							          |
+| Convolution    	  | 1x1 stride, valid padding, outputs 28x28x6 	|
+| RELU				    	|												                      |
+| Max Pooling	    	| 2x2 stride, outputs 14x14x6	 	   		        |
+| Convolution 	    | 1x1 stride, valid padding, outputs 10x10x16 |
+| RELU	           	|                             								|
+| Max Pooling 			| 2x2 stride, outputs 5x5x16 									|
+|	Flatten 					|	outputs 400            											|
+| Fully Connected		|	outputs	120 	             									|
+| RELU	           	|                             								|
+| Fully Connected		|	outputs	84  	             									|
+| RELU	           	|                             								|
+| Fully Connected		|	outputs	43  	             									|
 
+#### 3. Steps to train my model.
 
+To train the model, I used an different combination of EPOCH, BATCH_SIZE, and learn_rate values. I tried EPOCH values in `{30, 40, 50, 60}` and choose the BATCH_SIZE in `{90, 100, 128, 200}`. I also tried to tune the learn_rate use larger or smaller value than the default `0.001`, such as `0.0005, 0.0009, 0.0015, 0.002`. For the other parameters I use the same values as the ones in the LeNet Lab solution: `mu=0, sigma=0.1`. For each combination, I had to rerun the training process to see the results and compare the accuracy.
 
-#### 3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
-
-To train the model, I used an ....
+I finally choose `EPOCH=50, BATCH_SIZE=100, learn_rate=0.001` this combination of the parameters because their results are the best!
 
 #### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
 My final model results were:
-* training set accuracy of ?
-* validation set accuracy of ?
-* test set accuracy of ?
+* training set accuracy of 0.992
+* validation set accuracy of 0.992
+* test set accuracy of 0.933
 
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
@@ -129,14 +134,15 @@ If a well known architecture was chosen:
 
 #### 1. Choose five German traffic signs found on the web and provide them in the report. For each image, discuss what quality or qualities might be difficult to classify.
 
-Here are ten German traffic signs that I found on the web, namely,  [2]:
+Here are ten German traffic signs that I found on the web, the source images are in Alex Staravoitau's Github [2].
 
+![Extra 10 images][image3]
 
-![alt text][image3]
+The first image might be difficult to classify because it looks similar to the sign of children crossing the road. The forth image may be difficult to recognize by the classifier because the sign does not face the camera directly, the plate's round white edge may confuse the classifier. The last left turn ahead sign may be difficult to be classified because its pose makes it look like to the sign of "keeping left".
+
 ![alt text][image4]
 
 
-The first image might be difficult to classify because ...
 
 #### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set (OPTIONAL: Discuss the results in more detail as described in the "Stand Out Suggestions" part of the rubric).
 
@@ -171,7 +177,7 @@ For the first image, the model is relatively sure that this is a stop sign (prob
 For the second image ...
 
 ## References
-[1] [Jeremy Shannon's Github](https://github.com/jeremy-shannon/CarND-Traffic-Sign-Classifier-Project)
-[2] [Alex Staravoitau's Github](https://github.com/navoshta/traffic-signs)
-[3] [Wikipedia: Road Signs in Germany](https://en.wikipedia.org/wiki/Road_signs_in_Germany)
-[4] [Pierre Sermanet and Yann LeCun's IJCNN Paper](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf)
+- [1] [Jeremy Shannon's Github](https://github.com/jeremy-shannon/CarND-Traffic-Sign-Classifier-Project)
+- [2] [Alex Staravoitau's Github](https://github.com/navoshta/traffic-signs)
+- [3] [Wikipedia: Road Signs in Germany](https://en.wikipedia.org/wiki/Road_signs_in_Germany)
+- [4] [Pierre Sermanet and Yann LeCun's IJCNN Paper](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf)
