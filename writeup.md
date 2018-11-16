@@ -25,6 +25,8 @@ The goals / steps of this project are the following:
 [image7]: ./images/gray_5.png "Traffic Sign Grayscale 2"
 [image8]: ./images/gray_norm_5.png "Traffic Sign Grayscale 2 Normalized"
 [image9]: ./images/modifiedLeNet.jpeg "Modified LeNet Architecture"
+[image10]: ./images/43_signs.png "All Signs"
+[image11]: ./images/softmax_prob.png "Softmax Probabilities"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.
@@ -44,11 +46,15 @@ The 1st code block of my Ipython notebook loads the image sets from the `../data
 
 #### 2. Include an exploratory visualization of the dataset.
 
-Here is an exploratory visualization of the data set. The figure below shows the bar charts representing the data distributions in the train set (blue color), the test set (red), and the validation set (green), respectively.
+Here is an exploratory visualization of the data set. The figure below is plotted by the codes in the 4th block. It shows the bar charts representing the data distributions in the train set (blue color), the test set (red), and the validation set (green), respectively.
 
 The conclusion is that the data distributions of the train, test, and validation sets are mostly the consistent with each other. Therefore, our learning algorithm runs under a good premise of datasets.
 
 ![Dataset distributions][image1]
+
+Furthermore, I would like to know what the distinct traffic signs look like in the train set. So I define codes in the 6th code block to display all 43 distinct signs:
+
+![All 43 Signs][image10]
 
 ### Design and Test a Model Architecture
 
@@ -74,15 +80,9 @@ The codes are in the 8th code block of the notebook. The pictures below show the
 
 #### 2. Final model architecture
 
-Jeremy Shannon obtained impressive results with a quite high accuracy on the train and test datasets in his work [1]. However, he used a modified CNN architecture (shown below) by splitting the results of the 1st convolution layer into two parts, then apply a convolution layer to just one set and join with the other set with the results together.
+My idea of solving this project is simpler: just re-use the LeNet architecture in the Lab solution as much as possible. First because I believe that the architecture introduced by Yann LeCun ([LeNet paper](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf)) should work well with the traffic sign image datasets. The intuition behind my belief is that the traffic sign dataset can be treated as just a speical type of "MNIST" dataset. Secondly, I am curious to know how would the original LeNet architecture perform with the traffic sign dataset.
 
-![Modified LeNet Architecture][image9]
-
-(The above architecture figure is from the [IJCNN paper](http://yann.lecun.com/exdb/publis/pdf/sermanet-ijcnn-11.pdf) of Pierre Sermanet and Yann LeCun.)
-
-My idea of solving this project is simpler: just re-use the LeNet architecture in the Lab solution as much as possible. First because I believe that the architecture introduced by Yann LeCun ([LeNet paper](http://yann.lecun.com/exdb/publis/pdf/lecun-01a.pdf)) should work well with the traffic sign image datasets. Secondly, I am curious to know how would the original LeNet architecture perform with the traffic sign dataset.
-
-In my 12th code block of the notebook, I keep the most of the codes in the LeNet Lab. The only change I made is to change the dimension of the output layer from 10 to 43, which is the actual number of classes of signs, as the figure shows below:
+In my 12th code block of the notebook, I keep the most of the codes previously tested in the LeNet Lab. The only change I made is to change the dimension of the output layer from 10 to 43, which is the actual number of classes of signs, as the figure shows below:
 
 ![LeNet Architecture][image2]
 
@@ -104,30 +104,75 @@ My final model consisted of the following layers:
 | RELU	           	|                             								|
 | Fully Connected		|	outputs	43  	             									|
 
-#### 3. Steps to train my model.
+#### 3. Describe how you trained your model. The discussion can include the type of optimizer, the batch size, number of epochs and any hyperparameters such as learning rate.
 
-To train the model, I used an different combination of EPOCH, BATCH_SIZE, and learn_rate values. I tried EPOCH values in `{30, 40, 50, 60}` and choose the BATCH_SIZE in `{90, 100, 128, 200}`. I also tried to tune the learn_rate use larger or smaller value than the default `0.001`, such as `0.0005, 0.0009, 0.0015, 0.002`. For the other parameters I use the same values as the ones in the LeNet Lab solution: `mu=0, sigma=0.1`. For each combination, I had to rerun the training process to see the results and compare the accuracy.
+To train the model,  I used mostly the same components and parameters used in the LeNet Lab, such as the Adam optimizer, valid padding, max pooling, etc. The final settings used were:
 
-I finally choose `EPOCH=50, BATCH_SIZE=100, learn_rate=0.001` this combination of the parameters because their results are the best!
+- epochs: 60
+- batch size: 100
+- learning rate: 0.001
+- mu: 0
+- sigma: 0.1
+- dropout: N/A
 
 #### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
 
 My final model results were:
-* training set accuracy of 0.992
-* validation set accuracy of 0.992
-* test set accuracy of 0.933
+* training set accuracy of 1.000
+* validation set accuracy of 0.989
+* test set accuracy of 0.931
 
 If an iterative approach was chosen:
 * What was the first architecture that was tried and why was it chosen?
+  - LeNet. It is always to start with an architecture that I am familiar with.
 * What were some problems with the initial architecture?
+  - I observe the performance of this CNN architecture fluctuates in a wide range with different hyperparameters. For example, with `EPOCH=60, BATCH_SIZE=100, rate=0.001`, the test accuracy is over 90%. However, with `EPOCH=50, BATCH_SIZE=128, rate=0.001`, the test accuracy is below 80%.
+  - Even I use exactly the same set of parameters, running the training process could finally output slightly different accuracy. For example, with `EPOCH=60, BATCH_SIZE=100, rate=0.001`, the highest validation accuracy I ever achieved is 0.992, and the lowest accuracy I got is around 0.960.
 * How was the architecture adjusted and why was it adjusted? Typical adjustments could include choosing a different model architecture, adding or taking away layers (pooling, dropout, convolution, etc), using an activation function or changing the activation function. One common justification for adjusting an architecture would be due to overfitting or underfitting. A high accuracy on the training set but low accuracy on the validation set indicates over fitting; a low accuracy on both sets indicates under fitting.
+  - Not much. I only adjusted the size of the last fully connected layer by changing it from 10 to 43.
 * Which parameters were tuned? How were they adjusted and why?
-* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+  - I adjusted parameters of `EPOCH`, `BATCH_SIZE`, and `rate` (learning rate).
+  - The way I adjusted these values is to try different combination of EPOCH, BATCH_SIZE, and learning rate values iteratively.
+    - The EPOCH values are: `{30, 40, 50, 55, 60, 80}`.
+    - The BATCH_SIZE values are: `{90, 100, 128, 200}`.
+    - The learning rate values are: `{0.0005, 0.0009, 0.001, 0.0011, 0.0015, 0.002}`.
+    - The dropout (keep probability) values are: `{1.0, 0.5}`.
+    - For the other parameters I use the same values as the ones in the LeNet Lab solution: `mu=0, sigma=0.1`.
 
-If a well known architecture was chosen:
-* What architecture was chosen?
-* Why did you believe it would be relevant to the traffic sign application?
-* How does the final model's accuracy on the training, validation and test set provide evidence that the model is working well?
+    For each combination, I had to rerun the training process to see the results and compare the accuracy.
+
+    I finally choose the combination of `EPOCH=60, BATCH_SIZE=100, rate=0.001` among all the possible combinations because their results are the best! You may raise a question that there are hundreds of combinations and trying one by one is very time-consuming. Indeed, this process costs a lot of times and efforts. I would like to share three observations learned from this process:
+    1. A useful trick I find to accelerate this process is: **look at the first validation accuracy closely!** I find when the first validation accuracy is a low number, such as 0.107, 0.431, etc., the final validation accuracy will always be very poor. Whenever I see such a scenario, that is, the first one or two accuracy values are under 0.500, I immediately stop the training process and re-start it with another parameter combination.
+      ```
+      Training...
+
+      EPOCH 1 ...
+      Validation Accuracy = 0.782
+
+      EPOCH 2 ...
+      Validation Accuracy = 0.911
+
+      EPOCH 3 ...
+      Validation Accuracy = 0.945
+
+      EPOCH 4 ...
+      Validation Accuracy = 0.949
+
+      ...
+
+      EPOCH 58 ...
+      Validation Accuracy = 0.989
+
+      EPOCH 59 ...
+      Validation Accuracy = 0.989
+
+      EPOCH 60 ...
+      Validation Accuracy = 0.989
+      ```
+    2. The higher initial validation accuracy, the higher possibility to achieve a good final accuracy. From my experiments, a very good final validation accuracy always starts from 0.7xx or above at the first iteration.
+    3. To choose a good `EPOCH` value, how to decide if the number is good enough? My experience is that the validation accuracy should increase from low to high and finally converge to a number. For example, when I used `EPOCH=40`, I saw the validation accuracy kept increasing from 0.7xx to 0.96x without staying around 0.96x, so I increased the epoch value. In contrast, when I tried `EPOCH=80`, I saw the validation accuracy went to a highest number 0.99x and then decreased to 0.98x. Then I reduced the epoch value. You can see from above logs, when `EPOCH=60`, the validation accuracy stayed at 0.989 an no longer increased or decreased.
+* What are some of the important design choices and why were they chosen? For example, why might a convolution layer work well with this problem? How might a dropout layer help with creating a successful model?
+  - I also tried adding a dropout layer in the architecture. I run the training process with the keep probability values of 1.0 and 0.5, respectively. Meanwhile, I keep other parameters no changed. As a result, I find the final accuracies of two cases are similar. So I just do not add the dropout layer consider its minor performance impact in my architecture.
 
 
 ### Test a Model on New Images
@@ -157,7 +202,7 @@ Here are the results of the prediction:
 | Slippery Road			| Slippery Road      							|
 
 
-The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 80%. This compares favorably to the accuracy on the test set of ...
+The model was able to correctly guess 4 of the 5 traffic signs, which gives an accuracy of 90%. This compares favorably to the accuracy on the test set of ...
 
 #### 3. Describe how certain the model is when predicting on each of the five new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. (OPTIONAL: as described in the "Stand Out Suggestions" part of the rubric, visualizations can also be provided such as bar charts)
 
@@ -174,7 +219,10 @@ For the first image, the model is relatively sure that this is a stop sign (prob
 | .01				    | Slippery Road      							|
 
 
+
 For the second image ...
+
+![Softmax Probabilities][image11]
 
 ## References
 - [1] [Jeremy Shannon's Github](https://github.com/jeremy-shannon/CarND-Traffic-Sign-Classifier-Project)
